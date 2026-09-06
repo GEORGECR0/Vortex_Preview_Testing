@@ -72,7 +72,7 @@ const skinMat = new THREE.MeshStandardMaterial({
 });
 
 loader.load(
-  "assets/images/bob.png",
+  "assets/images/Bob.png",
 
   (texture) => {
     console.log("================================");
