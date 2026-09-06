@@ -64,44 +64,51 @@ function createPixelTexture(src) {
 
   return tex;
 }
+const loader = new THREE.TextureLoader();
 
 const skinMat = new THREE.MeshStandardMaterial({
-  color: 0xff0000,
   roughness: 0.6,
   metalness: 0
 });
 
-loader.load(
-  "assets/images/Bob.png",
+function loadSkin(url) {
+  console.log("[Vortex] Loading skin:", url);
 
-  (texture) => {
-    console.log("================================");
-    console.log("BOB.PNG LOADED!");
-    console.log("width:", texture.image.width);
-    console.log("height:", texture.image.height);
-    console.log("================================");
+  loader.load(
+    url,
 
-    texture.magFilter = THREE.NearestFilter;
-    texture.minFilter = THREE.NearestFilter;
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    texture.generateMipmaps = false;
-    texture.colorSpace = THREE.SRGBColorSpace;
+    (texture) => {
+      console.log("[Vortex] SKIN LOADED");
+      console.log("Size:", texture.image.width, "x", texture.image.height);
 
-    skinMat.map = texture;
-    skinMat.color.set(0xffffff);
-    skinMat.needsUpdate = true;
-  },
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.NearestFilter;
+      texture.wrapS = THREE.ClampToEdgeWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.generateMipmaps = false;
+      texture.colorSpace = THREE.SRGBColorSpace;
 
-  undefined,
+      const oldTexture = skinMat.map;
 
-  (error) => {
-    console.error("!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.error("BOB.PNG FAILED TO LOAD");
-    console.error(error);
-    console.error("!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
-);
+      skinMat.map = texture;
+      skinMat.color.set(0xffffff);
+      skinMat.needsUpdate = true;
+
+      if (oldTexture) {
+        oldTexture.dispose();
+      }
+    },
+
+    undefined,
+
+    (error) => {
+      console.error("[Vortex] SKIN FAILED:", url);
+      console.error(error);
+    }
+  );
+}
+
+loadSkin("assets/images/Bob.png");
 
 function setUVs(g, faces, w = 64, h = 64) {
   const u = g.attributes.uv.array;
