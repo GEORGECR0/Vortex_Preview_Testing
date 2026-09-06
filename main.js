@@ -64,51 +64,11 @@ function createPixelTexture(src) {
 
   return tex;
 }
-const loader = new THREE.TextureLoader();
-
 const skinMat = new THREE.MeshStandardMaterial({
+  map: createPixelTexture("assets/images/bob.png"),
   roughness: 0.6,
   metalness: 0
 });
-
-function loadSkin(url) {
-  console.log("[Vortex] Loading skin:", url);
-
-  loader.load(
-    url,
-
-    (texture) => {
-      console.log("[Vortex] SKIN LOADED");
-      console.log("Size:", texture.image.width, "x", texture.image.height);
-
-      texture.magFilter = THREE.NearestFilter;
-      texture.minFilter = THREE.NearestFilter;
-      texture.wrapS = THREE.ClampToEdgeWrapping;
-      texture.wrapT = THREE.ClampToEdgeWrapping;
-      texture.generateMipmaps = false;
-      texture.colorSpace = THREE.SRGBColorSpace;
-
-      const oldTexture = skinMat.map;
-
-      skinMat.map = texture;
-      skinMat.color.set(0xffffff);
-      skinMat.needsUpdate = true;
-
-      if (oldTexture) {
-        oldTexture.dispose();
-      }
-    },
-
-    undefined,
-
-    (error) => {
-      console.error("[Vortex] SKIN FAILED:", url);
-      console.error(error);
-    }
-  );
-}
-
-loadSkin("assets/images/Bob.png");
 
 function setUVs(g, faces, w = 64, h = 64) {
   const u = g.attributes.uv.array;
