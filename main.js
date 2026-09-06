@@ -66,30 +66,41 @@ function createPixelTexture(src) {
 }
 
 const skinMat = new THREE.MeshStandardMaterial({
+  color: 0xff0000,
   roughness: 0.6,
   metalness: 0
 });
 
 loader.load(
-  "https://i.postimg.cc/1zxV9HDk/Bob.png",
+  "assets/images/bob.png",
+
   (texture) => {
+    console.log("================================");
+    console.log("BOB.PNG LOADED!");
+    console.log("width:", texture.image.width);
+    console.log("height:", texture.image.height);
+    console.log("================================");
 
     texture.magFilter = THREE.NearestFilter;
     texture.minFilter = THREE.NearestFilter;
-
     texture.wrapS = THREE.ClampToEdgeWrapping;
     texture.wrapT = THREE.ClampToEdgeWrapping;
-
     texture.generateMipmaps = false;
-
     texture.colorSpace = THREE.SRGBColorSpace;
 
     skinMat.map = texture;
+    skinMat.color.set(0xffffff);
     skinMat.needsUpdate = true;
-
-    console.log("bob.png loaded!");
   },
+
   undefined,
+
+  (error) => {
+    console.error("!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.error("BOB.PNG FAILED TO LOAD");
+    console.error(error);
+    console.error("!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
 );
 
 function setUVs(g, faces, w = 64, h = 64) {
