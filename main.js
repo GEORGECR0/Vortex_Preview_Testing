@@ -71,7 +71,7 @@ const skinMat = new THREE.MeshStandardMaterial({
 });
 
 loader.load(
-  "assets/images/bob.png",
+  "https://i.postimg.cc/1zxV9HDk/Bob.png",
   (texture) => {
 
     texture.magFilter = THREE.NearestFilter;
