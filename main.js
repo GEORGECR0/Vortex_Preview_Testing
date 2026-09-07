@@ -50,7 +50,17 @@ scene.add(sun);
 const loader = new THREE.TextureLoader();
 
 function createPixelTexture(src) {
-  const tex = loader.load(src);
+  const tex = loader.load(
+    src,
+    () => {
+      console.log("Skin loaded:", src);
+      tex.needsUpdate = true;
+    },
+    undefined,
+    (error) => {
+      console.error("SKIN FAILED TO LOAD:", src, error);
+    }
+  );
 
   tex.magFilter = THREE.NearestFilter;
   tex.minFilter = THREE.NearestFilter;
@@ -64,11 +74,29 @@ function createPixelTexture(src) {
 
   return tex;
 }
+
+
 const skinMat = new THREE.MeshStandardMaterial({
-  map: createPixelTexture("assets/images/bob.png"),
   roughness: 0.6,
   metalness: 0
 });
+
+
+function setCharacterImage(imageUrl) {
+  if (typeof imageUrl !== "string" || !imageUrl) {
+    return;
+  }
+
+  const newTexture = createPixelTexture(imageUrl);
+
+  skinMat.map = newTexture;
+  skinMat.needsUpdate = true;
+}
+
+
+// DEFAULT SKIN
+setCharacterImage("assets/images/Bob.png");
+
 
 function setUVs(g, faces, w = 64, h = 64) {
   const u = g.attributes.uv.array;
@@ -355,17 +383,6 @@ function setCharacterName(name) {
   bloxdman.add(nametag);
 }
 
-
-function setCharacterImage(imageUrl) {
-  if (typeof imageUrl !== "string") {
-    return;
-  }
-
-  const newTexture = createPixelTexture(imageUrl);
-
-  skinMat.map = newTexture;
-  skinMat.needsUpdate = true;
-}
 
 window.addEventListener("message", (event) => {
 
