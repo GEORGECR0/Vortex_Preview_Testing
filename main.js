@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-
+console.log("CHARACTER JS IS RUNNING");
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
