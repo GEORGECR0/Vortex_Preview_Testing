@@ -95,7 +95,7 @@ function setCharacterImage(imageUrl) {
 
 
 // DEFAULT SKIN
-setCharacterImage("assets/images/Bob.png");
+setCharacterImage("./assets/images/Bob.png");
 
 
 function setUVs(g, faces, w = 64, h = 64) {
