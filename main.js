@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-console.log("CHARACTER JS IS RUNNING");
+
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
@@ -19,6 +19,8 @@ const renderer = new THREE.WebGLRenderer({
   alpha: true
 });
 
+renderer.setClearColor(0x000000, 0);
+
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.physicallyCorrectLights = true;
 renderer.shadowMap.enabled = true;
@@ -30,7 +32,7 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
 document.body.appendChild(renderer.domElement);
-
+scene.background = null;
 scene.add(new THREE.AmbientLight(0xffcfa0, 0.5));
 
 scene.add(
@@ -94,7 +96,6 @@ function setCharacterImage(imageUrl) {
 }
 
 
-// DEFAULT SKIN
 setCharacterImage("./assets/images/Bob.png");
 
 
@@ -423,15 +424,51 @@ addEventListener("resize", () => {
 
 });
 
-function animate() {
+let dragging = false;
+let lastX = 0;
 
+let targetRotationY = 0;
+let currentRotationY = 0;
+
+const rotationSpeed = 0.008;
+const smoothness = 0.12;
+
+renderer.domElement.addEventListener("pointerdown", (event) => {
+  dragging = true;
+  lastX = event.clientX;
+
+  renderer.domElement.setPointerCapture(event.pointerId);
+});
+
+renderer.domElement.addEventListener("pointermove", (event) => {
+  if (!dragging) return;
+
+  const deltaX = event.clientX - lastX;
+
+  targetRotationY += deltaX * rotationSpeed;
+
+  lastX = event.clientX;
+});
+
+renderer.domElement.addEventListener("pointerup", (event) => {
+  dragging = false;
+  renderer.domElement.releasePointerCapture(event.pointerId);
+});
+
+renderer.domElement.addEventListener("pointercancel", () => {
+  dragging = false;
+});
+
+function animate() {
   requestAnimationFrame(animate);
 
-  renderer.render(
-    scene,
-    camera
-  );
+  // Smoothly move toward target rotation
+  currentRotationY +=
+    (targetRotationY - currentRotationY) * smoothness;
 
+  bloxdman.rotation.y = currentRotationY;
+
+  renderer.render(scene, camera);
 }
 
 animate();
