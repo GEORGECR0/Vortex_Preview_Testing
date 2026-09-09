@@ -133,10 +133,9 @@ const bloxdman = new THREE.Group();
 
 scene.add(bloxdman);
 
-function createNametag(name) {
+function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   const group = new THREE.Group();
 
-  // Background
   const bgCanvas = document.createElement("canvas");
 
   bgCanvas.width = 500;
@@ -168,7 +167,7 @@ function createNametag(name) {
     bgTexture.needsUpdate = true;
   };
 
-  bgImage.src = "assets/images/red-trees.webp";
+  bgImage.src = imageUrl;
 
   const bgMaterial = new THREE.MeshBasicMaterial({
     map: bgTexture,
@@ -247,9 +246,25 @@ function createNametag(name) {
   return group;
 }
 
-let nametag = createNametag("Player");
+let nametagName = "Player";
+let nametagImage = "assets/images/red-trees.webp";
 
-bloxdman.add(nametag);
+function setCharacterName(name) {
+  if (typeof name !== "string" || !name) return;
+  nametagName = name;
+  bloxdman.remove(nametag);
+  nametag = createNametag(nametagName, nametagImage);
+  bloxdman.add(nametag);
+}
+
+function setNametagImage(imageUrl) {
+  if (typeof imageUrl !== "string" || !imageUrl) return;
+  nametagImage = imageUrl;
+  bloxdman.remove(nametag);
+  nametag = createNametag(nametagName, nametagImage);
+  bloxdman.add(nametag);
+}
+
 
 const torsoGeom = new THREE.BoxGeometry(
   8,
@@ -375,15 +390,6 @@ function makeLeg(x) {
 makeLeg(-2);
 makeLeg(2);
 
-function setCharacterName(name) {
-  if (typeof name !== "string") {
-    return;
-  }
-  bloxdman.remove(nametag);
-  nametag = createNametag(name);
-  bloxdman.add(nametag);
-}
-
 
 window.addEventListener("message", (event) => {
 
@@ -401,9 +407,9 @@ window.addEventListener("message", (event) => {
     setCharacterName(data.name);
   }
 
-  if (typeof data.image === "string") {
-    setCharacterImage(data.image);
-  }
+if (typeof data.image === "string") {
+  setNametagImage(data.image);
+}
 
 });
 addEventListener("resize", () => {
