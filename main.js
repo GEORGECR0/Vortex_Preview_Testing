@@ -413,11 +413,11 @@ window.addEventListener("message", (event) => {
   }
 
   if (typeof data.image === "string") {
-    setCharacterImage();
+   // setCharacterImage();
   }
 
     if (typeof data.image === "string") {
-    setNametagImage(data.image);
+    setCharacterImage(data.image);
   }
 
 });
