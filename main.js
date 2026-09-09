@@ -80,77 +80,46 @@ scene.add(bloxdman);
 let nametagName = "Player";
 let nametagImage = "assets/images/red-trees.webp";
 
-function createNametag(name, imageUrl = nametagImage) {
-  const group = new THREE.Group();
+function createNametag(name, imageUrl = "https://georgecr0.github.io/Vortex_Preview_Testing/assets/images/red-trees.webp") {
+    const canvas = document.createElement("canvas");
+    canvas.width = 500;
+    canvas.height = 50;
 
-  const bgCanvas = document.createElement("canvas");
-  bgCanvas.width = 500;
-  bgCanvas.height = 50;
+    const ctx = canvas.getContext("2d");
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
-  const bgCtx = bgCanvas.getContext("2d");
-  const bgTexture = new THREE.CanvasTexture(bgCanvas);
+    const image = new Image();
 
-  bgTexture.colorSpace = THREE.SRGBColorSpace;
-  bgTexture.minFilter = THREE.NearestFilter;
-  bgTexture.magFilter = THREE.NearestFilter;
+    image.onload = () => {
+        ctx.clearRect(0, 0, 500, 50);
+        ctx.drawImage(image, 0, 0, 500, 50);
+        texture.needsUpdate = true;
+    };
 
-  const bgImage = new Image();
+    image.src = imageUrl;
 
-  bgImage.onload = () => {
-    bgCtx.clearRect(0, 0, 500, 50);
-    bgCtx.drawImage(bgImage, 0, 0, 500, 50, 0, 0, 500, 50);
-    bgTexture.needsUpdate = true;
-  };
+    ctx.font = "bold 24px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(name, 250, 25);
 
-  bgImage.onerror = () => {};
+    const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true
+    });
 
-  bgImage.src = imageUrl;
+    const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.5, 0.25),
+        material
+    );
 
-  const bgMaterial = new THREE.MeshBasicMaterial({
-    map: bgTexture,
-    transparent: true,
-    side: THREE.DoubleSide,
-    depthTest: false
-  });
+    mesh.position.y = 2.8;
 
-  const geometry = new THREE.PlaneGeometry(12, 3);
-  const bgMesh = new THREE.Mesh(geometry, bgMaterial);
-  group.add(bgMesh);
-
-  const textCanvas = document.createElement("canvas");
-  textCanvas.width = 500;
-  textCanvas.height = 50;
-
-  const textCtx = textCanvas.getContext("2d");
-  textCtx.clearRect(0, 0, 500, 50);
-  textCtx.fillStyle = "white";
-  textCtx.font = "bold 30px Arial";
-  textCtx.textAlign = "center";
-  textCtx.textBaseline = "middle";
-  textCtx.save();
-  textCtx.scale(2, 1);
-  textCtx.fillText(name, 125, 27);
-  textCtx.restore();
-
-  const textTexture = new THREE.CanvasTexture(textCanvas);
-  textTexture.colorSpace = THREE.SRGBColorSpace;
-  textTexture.minFilter = THREE.LinearFilter;
-  textTexture.magFilter = THREE.LinearFilter;
-
-  const textMaterial = new THREE.MeshBasicMaterial({
-    map: textTexture,
-    transparent: true,
-    side: THREE.DoubleSide,
-    depthTest: false
-  });
-
-  const textMesh = new THREE.Mesh(geometry.clone(), textMaterial);
-  textMesh.position.z = 0.01;
-  group.add(textMesh);
-
-  group.position.set(0, 17, 0);
-
-  return group;
+    return mesh;
 }
 
 let nametag = createNametag(nametagName, nametagImage);
