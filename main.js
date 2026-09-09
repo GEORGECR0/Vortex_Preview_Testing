@@ -144,7 +144,6 @@ function createNametag(name) {
 
   const bgCtx = bgCanvas.getContext("2d");
 
-  
   const bgTexture = new THREE.CanvasTexture(bgCanvas);
 
   bgTexture.colorSpace = THREE.SRGBColorSpace;
@@ -169,17 +168,7 @@ function createNametag(name) {
     bgTexture.needsUpdate = true;
   };
 
-    bgImage.src = "assets/images/red-trees.webp";
-  function setNametagImage(imageUrl) {
-  if (typeof imageUrl !== "string" || !imageUrl) {
-    return;
-  }
-
-  const newTexture = createPixelTexture(imageUrl);
-
-   bgImage.src = newTexture;
-}
-
+  bgImage.src = "assets/images/red-trees.webp";
 
   const bgMaterial = new THREE.MeshBasicMaterial({
     map: bgTexture,
@@ -413,10 +402,6 @@ window.addEventListener("message", (event) => {
   }
 
   if (typeof data.image === "string") {
-   // setCharacterImage();
-  }
-
-    if (typeof data.image === "string") {
     setCharacterImage(data.image);
   }
 
