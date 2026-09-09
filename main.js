@@ -136,38 +136,13 @@ scene.add(bloxdman);
 function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   const group = new THREE.Group();
 
-  const bgCanvas = document.createElement("canvas");
-
-  bgCanvas.width = 500;
-  bgCanvas.height = 50;
-
-  const bgCtx = bgCanvas.getContext("2d");
-
-  const bgTexture = new THREE.CanvasTexture(bgCanvas);
-
+  const bgTexture = loader.load(imageUrl);
   bgTexture.colorSpace = THREE.SRGBColorSpace;
   bgTexture.minFilter = THREE.NearestFilter;
   bgTexture.magFilter = THREE.NearestFilter;
-
-  const bgImage = new Image();
-
-  bgImage.onload = () => {
-    bgCtx.drawImage(
-      bgImage,
-      0,
-      0,
-      500,
-      50,
-      0,
-      0,
-      500,
-      50
-    );
-
-    bgTexture.needsUpdate = true;
-  };
-
-  bgImage.src = imageUrl;
+  bgTexture.wrapS = THREE.ClampToEdgeWrapping;
+  bgTexture.wrapT = THREE.ClampToEdgeWrapping;
+  bgTexture.generateMipmaps = false;
 
   const bgMaterial = new THREE.MeshBasicMaterial({
     map: bgTexture,
@@ -184,44 +159,29 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   );
 
   group.add(bgMesh);
-  const textCanvas = document.createElement("canvas");
 
+  const textCanvas = document.createElement("canvas");
   textCanvas.width = 500;
   textCanvas.height = 50;
 
   const textCtx = textCanvas.getContext("2d");
 
-  textCtx.clearRect(
-    0,
-    0,
-    textCanvas.width,
-    textCanvas.height
-  );
-
+  textCtx.clearRect(0, 0, 500, 50);
   textCtx.fillStyle = "white";
   textCtx.font = "bold 30px Arial";
   textCtx.textAlign = "center";
   textCtx.textBaseline = "middle";
 
   textCtx.save();
-
   textCtx.scale(2, 1);
-
-  textCtx.fillText(
-    name,
-    125,
-    27
-  );
-
+  textCtx.fillText(name, 125, 27);
   textCtx.restore();
-
 
   const textTexture = new THREE.CanvasTexture(textCanvas);
 
   textTexture.colorSpace = THREE.SRGBColorSpace;
   textTexture.minFilter = THREE.LinearFilter;
   textTexture.magFilter = THREE.LinearFilter;
-
 
   const textMaterial = new THREE.MeshBasicMaterial({
     map: textTexture,
@@ -230,16 +190,13 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
     depthTest: false
   });
 
-
   const textMesh = new THREE.Mesh(
     geometry.clone(),
     textMaterial
   );
 
   textMesh.position.z = 0.01;
-
   group.add(textMesh);
-
 
   group.position.set(0, 17, 0);
 
