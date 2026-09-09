@@ -249,6 +249,10 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 let nametagName = "Player";
 let nametagImage = "assets/images/red-trees.webp";
 
+let nametag = createNametag(nametagName, nametagImage);
+
+bloxdman.add(nametag);
+
 function setCharacterName(name) {
   if (typeof name !== "string" || !name) return;
   nametagName = name;
@@ -391,27 +395,20 @@ makeLeg(-2);
 makeLeg(2);
 
 
-window.addEventListener("message", (event) => {
-
+window.addEventListener("message", event => {
   const data = event.data;
 
-  if (!data) {
-    return;
-  }
-
-  if (data.type !== "character-control") {
-    return;
-  }
+  if (!data || data.type !== "character-control") return;
 
   if (typeof data.name === "string") {
     setCharacterName(data.name);
   }
 
-if (typeof data.image === "string") {
-  setNametagImage(data.image);
-}
-
+  if (typeof data.image === "string") {
+    setNametagImage(data.image);
+  }
 });
+
 addEventListener("resize", () => {
 
   camera.aspect =
