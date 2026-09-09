@@ -136,13 +136,26 @@ scene.add(bloxdman);
 function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   const group = new THREE.Group();
 
-  const bgTexture = loader.load(imageUrl);
+  const bgCanvas = document.createElement("canvas");
+  bgCanvas.width = 500;
+  bgCanvas.height = 50;
+
+  const bgCtx = bgCanvas.getContext("2d");
+  const bgTexture = new THREE.CanvasTexture(bgCanvas);
+
   bgTexture.colorSpace = THREE.SRGBColorSpace;
   bgTexture.minFilter = THREE.NearestFilter;
   bgTexture.magFilter = THREE.NearestFilter;
-  bgTexture.wrapS = THREE.ClampToEdgeWrapping;
-  bgTexture.wrapT = THREE.ClampToEdgeWrapping;
-  bgTexture.generateMipmaps = false;
+
+  const bgImage = new Image();
+
+  bgImage.onload = () => {
+    bgCtx.clearRect(0, 0, 500, 50);
+    bgCtx.drawImage(bgImage, 0, 0, 500, 50);
+    bgTexture.needsUpdate = true;
+  };
+
+  bgImage.src = imageUrl;
 
   const bgMaterial = new THREE.MeshBasicMaterial({
     map: bgTexture,
@@ -153,11 +166,7 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 
   const geometry = new THREE.PlaneGeometry(12, 3);
 
-  const bgMesh = new THREE.Mesh(
-    geometry,
-    bgMaterial
-  );
-
+  const bgMesh = new THREE.Mesh(geometry, bgMaterial);
   group.add(bgMesh);
 
   const textCanvas = document.createElement("canvas");
