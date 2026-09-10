@@ -140,20 +140,19 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 
   bgTexture.colorSpace = THREE.SRGBColorSpace;
 
-  // Pixel-art filtering
+  // Keep pixels sharp
   bgTexture.minFilter = THREE.NearestFilter;
   bgTexture.magFilter = THREE.NearestFilter;
 
-  bgTexture.wrapS = THREE.ClampToEdgeWrapping;
-  bgTexture.wrapT = THREE.ClampToEdgeWrapping;
-
+  // No mipmaps
   bgTexture.generateMipmaps = false;
 
-  // Show only a small area from the TOP-LEFT of the original image.
-  // 0.0 = left, 1.0 = right
-  // 0.0 = bottom, 1.0 = top
+  // Crop to the TOP-LEFT of the original image
   bgTexture.repeat.set(0.35, 0.35);
   bgTexture.offset.set(0, 0.65);
+
+  bgTexture.wrapS = THREE.ClampToEdgeWrapping;
+  bgTexture.wrapT = THREE.ClampToEdgeWrapping;
 
   const bgMaterial = new THREE.MeshBasicMaterial({
     map: bgTexture,
@@ -163,7 +162,7 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   });
 
   // Smaller nametag
-  const geometry = new THREE.PlaneGeometry(8, 2);
+  const geometry = new THREE.PlaneGeometry(12, 3);
 
   const bgMesh = new THREE.Mesh(
     geometry,
