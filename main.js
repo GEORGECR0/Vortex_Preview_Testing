@@ -226,7 +226,6 @@ function setNametagImage(imageUrl) {
   bloxdman.add(nametag);
 }
 
-
 const torsoGeom = new THREE.BoxGeometry(
   8,
   12,
