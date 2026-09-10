@@ -132,16 +132,28 @@ function setUVs(g, faces, w = 64, h = 64) {
 const bloxdman = new THREE.Group();
 
 scene.add(bloxdman);
+
 function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   const group = new THREE.Group();
 
   const bgTexture = loader.load(imageUrl);
+
   bgTexture.colorSpace = THREE.SRGBColorSpace;
+
+  // Pixel-art filtering
   bgTexture.minFilter = THREE.NearestFilter;
   bgTexture.magFilter = THREE.NearestFilter;
+
   bgTexture.wrapS = THREE.ClampToEdgeWrapping;
   bgTexture.wrapT = THREE.ClampToEdgeWrapping;
+
   bgTexture.generateMipmaps = false;
+
+  // Show only a small area from the TOP-LEFT of the original image.
+  // 0.0 = left, 1.0 = right
+  // 0.0 = bottom, 1.0 = top
+  bgTexture.repeat.set(0.35, 0.35);
+  bgTexture.offset.set(0, 0.65);
 
   const bgMaterial = new THREE.MeshBasicMaterial({
     map: bgTexture,
@@ -150,42 +162,38 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
     depthTest: false
   });
 
-  const geometry = new THREE.PlaneGeometry(12, 3);
+  // Smaller nametag
+  const geometry = new THREE.PlaneGeometry(8, 2);
 
   const bgMesh = new THREE.Mesh(
     geometry,
     bgMaterial
   );
 
-  // Crop ONLY the background texture to its top-left corner
-  bgMesh.material.map.repeat.set(0.5, 0.5);
-  bgMesh.material.map.offset.set(0, 0.5);
-
   group.add(bgMesh);
 
-
+  // Text
   const textCanvas = document.createElement("canvas");
+
   textCanvas.width = 500;
   textCanvas.height = 50;
 
   const textCtx = textCanvas.getContext("2d");
 
   textCtx.clearRect(0, 0, 500, 50);
+
   textCtx.fillStyle = "white";
   textCtx.font = "bold 30px Arial";
   textCtx.textAlign = "center";
   textCtx.textBaseline = "middle";
 
-  textCtx.save();
-  textCtx.scale(2, 1);
-  textCtx.fillText(name, 125, 27);
-  textCtx.restore();
+  textCtx.fillText(name, 250, 27);
 
   const textTexture = new THREE.CanvasTexture(textCanvas);
 
   textTexture.colorSpace = THREE.SRGBColorSpace;
-  textTexture.minFilter = THREE.LinearFilter;
-  textTexture.magFilter = THREE.LinearFilter;
+  textTexture.minFilter = THREE.NearestFilter;
+  textTexture.magFilter = THREE.NearestFilter;
 
   const textMaterial = new THREE.MeshBasicMaterial({
     map: textTexture,
@@ -200,6 +208,7 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   );
 
   textMesh.position.z = 0.01;
+
   group.add(textMesh);
 
   group.position.set(0, 17, 0);
