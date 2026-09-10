@@ -152,23 +152,17 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 
   const geometry = new THREE.PlaneGeometry(12, 3);
 
-  // Show only the top-left quarter of the image
   const bgMesh = new THREE.Mesh(
     geometry,
     bgMaterial
   );
 
-  bgMesh.geometry.setAttribute(
-    "uv",
-    new THREE.Float32BufferAttribute([
-      0, 0.5,
-      0.5, 0.5,
-      0, 0,
-      0.5, 0
-    ], 2)
-  );
+  // Crop ONLY the background texture to its top-left corner
+  bgMesh.material.map.repeat.set(0.5, 0.5);
+  bgMesh.material.map.offset.set(0, 0.5);
 
   group.add(bgMesh);
+
 
   const textCanvas = document.createElement("canvas");
   textCanvas.width = 500;
