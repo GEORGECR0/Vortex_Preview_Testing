@@ -134,82 +134,61 @@ const bloxdman = new THREE.Group();
 scene.add(bloxdman);
 
 function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
-  const group = new THREE.Group();
+    const group = new THREE.Group();
 
-  const bgCanvas = document.createElement("canvas");
-  bgCanvas.width = 500;
-  bgCanvas.height = 50;
+    const bgTexture = loader.load(imageUrl);
+    bgTexture.colorSpace = THREE.SRGBColorSpace;
+    bgTexture.minFilter = THREE.LinearFilter;
+    bgTexture.magFilter = THREE.LinearFilter;
+    bgTexture.wrapS = THREE.ClampToEdgeWrapping;
+    bgTexture.wrapT = THREE.ClampToEdgeWrapping;
 
-  const bgCtx = bgCanvas.getContext("2d");
-  const bgTexture = new THREE.CanvasTexture(bgCanvas);
+    const geometry = new THREE.PlaneGeometry(12, 3);
 
-  bgTexture.colorSpace = THREE.SRGBColorSpace;
-  bgTexture.minFilter = THREE.NearestFilter;
-  bgTexture.magFilter = THREE.NearestFilter;
+    const bgMaterial = new THREE.MeshBasicMaterial({
+        map: bgTexture,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthTest: false
+    });
 
-  const bgImage = new Image();
+    const bgMesh = new THREE.Mesh(geometry, bgMaterial);
+    group.add(bgMesh);
 
-  bgImage.onload = () => {
-    bgCtx.clearRect(0, 0, 500, 50);
-    bgCtx.drawImage(bgImage, 0, 0, 500, 50);
-    bgTexture.needsUpdate = true;
-  };
+    const textCanvas = document.createElement("canvas");
+    textCanvas.width = 500;
+    textCanvas.height = 50;
 
-  bgImage.src = imageUrl;
+    const textCtx = textCanvas.getContext("2d");
+    textCtx.clearRect(0, 0, 500, 50);
+    textCtx.fillStyle = "white";
+    textCtx.font = "bold 30px Arial";
+    textCtx.textAlign = "center";
+    textCtx.textBaseline = "middle";
+    textCtx.save();
+    textCtx.scale(2, 1);
+    textCtx.fillText(name, 125, 27);
+    textCtx.restore();
 
-  const bgMaterial = new THREE.MeshBasicMaterial({
-    map: bgTexture,
-    transparent: true,
-    side: THREE.DoubleSide,
-    depthTest: false
-  });
+    const textTexture = new THREE.CanvasTexture(textCanvas);
+    textTexture.colorSpace = THREE.SRGBColorSpace;
+    textTexture.minFilter = THREE.LinearFilter;
+    textTexture.magFilter = THREE.LinearFilter;
 
-  const geometry = new THREE.PlaneGeometry(12, 3);
+    const textMaterial = new THREE.MeshBasicMaterial({
+        map: textTexture,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthTest: false
+    });
 
-  const bgMesh = new THREE.Mesh(geometry, bgMaterial);
-  group.add(bgMesh);
+    const textMesh = new THREE.Mesh(geometry.clone(), textMaterial);
+    textMesh.position.z = 0.01;
+    group.add(textMesh);
 
-  const textCanvas = document.createElement("canvas");
-  textCanvas.width = 500;
-  textCanvas.height = 50;
+    group.position.set(0, 17, 0);
 
-  const textCtx = textCanvas.getContext("2d");
-
-  textCtx.clearRect(0, 0, 500, 50);
-  textCtx.fillStyle = "white";
-  textCtx.font = "bold 30px Arial";
-  textCtx.textAlign = "center";
-  textCtx.textBaseline = "middle";
-
-  textCtx.save();
-  textCtx.scale(2, 1);
-  textCtx.fillText(name, 125, 27);
-  textCtx.restore();
-
-  const textTexture = new THREE.CanvasTexture(textCanvas);
-
-  textTexture.colorSpace = THREE.SRGBColorSpace;
-  textTexture.minFilter = THREE.LinearFilter;
-  textTexture.magFilter = THREE.LinearFilter;
-
-  const textMaterial = new THREE.MeshBasicMaterial({
-    map: textTexture,
-    transparent: true,
-    side: THREE.DoubleSide,
-    depthTest: false
-  });
-
-  const textMesh = new THREE.Mesh(
-    geometry.clone(),
-    textMaterial
-  );
-
-  textMesh.position.z = 0.01;
-  group.add(textMesh);
-
-  group.position.set(0, 17, 0);
-
-  return group;
+    return group;
 }
 
 let nametagName = "Player";
