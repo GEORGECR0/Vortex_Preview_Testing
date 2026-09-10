@@ -132,27 +132,83 @@ function setUVs(g, faces, w = 64, h = 64) {
 const bloxdman = new THREE.Group();
 
 scene.add(bloxdman);
-
 function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
   const group = new THREE.Group();
 
-  const bgTexture = loader.load(imageUrl);
+  const bgCanvas = document.createElement("canvas");
+
+  // Actual resolution of the background
+  bgCanvas.width = 32;
+  bgCanvas.height = 8;
+
+  const bgCtx = bgCanvas.getContext("2d");
+
+  bgCtx.imageSmoothingEnabled = false;
+
+  const bgImage = new Image();
+
+  bgImage.onload = () => {
+
+    /*
+      Crop from TOP-RIGHT of the original image.
+
+      sourceX:
+        0.65 = start 65% across the image
+        Increase this to crop further right.
+
+      sourceY:
+        0 = top of image
+
+      sourceWidth:
+        0.35 = use the rightmost 35%
+
+      sourceHeight:
+        0.35 = use the top 35%
+    */
+
+    const sourceX = bgImage.width * 0.65;
+    const sourceY = 0;
+
+    const sourceWidth = bgImage.width * 0.35;
+    const sourceHeight = bgImage.height * 0.35;
+
+    bgCtx.clearRect(
+      0,
+      0,
+      bgCanvas.width,
+      bgCanvas.height
+    );
+
+    bgCtx.drawImage(
+      bgImage,
+
+      // Crop from original
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+
+      // Draw into tiny canvas
+      0,
+      0,
+      bgCanvas.width,
+      bgCanvas.height
+    );
+
+    bgTexture.needsUpdate = true;
+  };
+
+  bgImage.src = imageUrl;
+
+  const bgTexture = new THREE.CanvasTexture(bgCanvas);
 
   bgTexture.colorSpace = THREE.SRGBColorSpace;
 
-  // Keep pixels sharp
+  // Keep the tiny pixels sharp when enlarged
   bgTexture.minFilter = THREE.NearestFilter;
   bgTexture.magFilter = THREE.NearestFilter;
 
-  // No mipmaps
   bgTexture.generateMipmaps = false;
-
-  // Crop to the TOP-LEFT of the original image
-  bgTexture.repeat.set(0.35, 0.35);
-  bgTexture.offset.set(0, 0.65);
-
-  bgTexture.wrapS = THREE.ClampToEdgeWrapping;
-  bgTexture.wrapT = THREE.ClampToEdgeWrapping;
 
   const bgMaterial = new THREE.MeshBasicMaterial({
     map: bgTexture,
@@ -161,7 +217,10 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
     depthTest: false
   });
 
-  // Smaller nametag
+  // ==========================================
+  // NAMETAG SIZE — SAME AS YOUR ORIGINAL
+  // ==========================================
+
   const geometry = new THREE.PlaneGeometry(12, 3);
 
   const bgMesh = new THREE.Mesh(
@@ -171,7 +230,10 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 
   group.add(bgMesh);
 
-  // Text
+  // ==========================================
+  // TEXT
+  // ==========================================
+
   const textCanvas = document.createElement("canvas");
 
   textCanvas.width = 500;
@@ -179,20 +241,34 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 
   const textCtx = textCanvas.getContext("2d");
 
-  textCtx.clearRect(0, 0, 500, 50);
+  textCtx.clearRect(
+    0,
+    0,
+    textCanvas.width,
+    textCanvas.height
+  );
 
   textCtx.fillStyle = "white";
   textCtx.font = "bold 30px Arial";
   textCtx.textAlign = "center";
   textCtx.textBaseline = "middle";
 
-  textCtx.fillText(name, 250, 27);
+  // Don't scale the canvas — keeps text normal
+  textCtx.fillText(
+    name,
+    250,
+    27
+  );
 
   const textTexture = new THREE.CanvasTexture(textCanvas);
 
   textTexture.colorSpace = THREE.SRGBColorSpace;
-  textTexture.minFilter = THREE.NearestFilter;
-  textTexture.magFilter = THREE.NearestFilter;
+
+  // Normal filtering for text
+  textTexture.minFilter = THREE.LinearFilter;
+  textTexture.magFilter = THREE.LinearFilter;
+
+  textTexture.generateMipmaps = false;
 
   const textMaterial = new THREE.MeshBasicMaterial({
     map: textTexture,
@@ -210,10 +286,12 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 
   group.add(textMesh);
 
+  // Same position as before
   group.position.set(0, 17, 0);
 
   return group;
 }
+
 
 let nametagName = "Player";
 let nametagImage = "assets/images/red-trees.webp";
