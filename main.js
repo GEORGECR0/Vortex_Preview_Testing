@@ -152,9 +152,20 @@ function createNametag(name, imageUrl = "assets/images/red-trees.webp") {
 
   const geometry = new THREE.PlaneGeometry(12, 3);
 
+  // Show only the top-left quarter of the image
   const bgMesh = new THREE.Mesh(
     geometry,
     bgMaterial
+  );
+
+  bgMesh.geometry.setAttribute(
+    "uv",
+    new THREE.Float32BufferAttribute([
+      0, 0.5,
+      0.5, 0.5,
+      0, 0,
+      0.5, 0
+    ], 2)
   );
 
   group.add(bgMesh);
