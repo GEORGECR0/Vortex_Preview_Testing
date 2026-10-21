@@ -1,26 +1,382 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base64 Converter</title>
 
-  <title>Bloxd Stuff</title>
+<style>
+* {
+    box-sizing: border-box;
+    border-radius: 0 !important;
+}
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/jpeg" href="assets/images/icon.jpg">
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    max-width: 800px;
+    margin: 32px auto;
+    padding: 16px;
+    background: #171717;
+    color: #d4d4d4;
+}
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-    }
-  }
-  </script>
+h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-top: 0;
+}
+
+h3 {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.card, #output-container {
+    background: #202020;
+    border: 1px solid #383838;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: none;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #c5c5c5;
+    font-size: 13px;
+}
+
+input[type="file"] {
+    margin-bottom: 20px;
+    max-width: 100%;
+    color: #aaa;
+}
+
+input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 16px;
+    background: #151515;
+    color: #ddd;
+    border: 1px solid #414141;
+    font: 12px/1.5 monospace;
+}
+
+textarea {
+    height: 150px;
+    resize: vertical;
+}
+
+textarea:focus, input:focus {
+    outline: 1px solid #777;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #383838;
+    margin: 18px 0;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+button {
+    padding: 9px 13px;
+    background: #303030;
+    color: #ddd;
+    border: 1px solid #505050;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #3a3a3a;
+}
+
+button.primary {
+    background: #484848;
+    border-color: #606060;
+    color: #fff;
+}
+
+button.primary:hover {
+    background: #555;
+}
+
+#output-container {
+    text-align: left;
+}
+
+#placeholder, .help, #status, #imageStatus {
+    color: #888;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    max-height: 400px;
+    margin: 15px 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.section-note {
+    color: #888;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+#glbStatus {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #aaa;
+    overflow-wrap: anywhere;
+}
+</style>
 </head>
 
 <body>
 
-  <script type="module" src="main.js"></script>
+<div class="card">
+    <h2>Base64 Converter</h2>
+
+    <h3>Image to Base64</h3>
+    <label for="fileInput">Upload image</label>
+    <input type="file" id="fileInput" accept="image/*">
+
+    <hr>
+
+    <label for="base64Input">Base64 string</label>
+    <textarea id="base64Input" spellcheck="false"
+        placeholder="Paste Base64 data here..."></textarea>
+
+    <div class="controls">
+        <button class="primary" onclick="processString()">
+            Convert to Image
+        </button>
+        <button onclick="copyToClipboard()">Copy Base64</button>
+    </div>
+
+    <p id="imageStatus"></p>
+</div>
+
+<div id="output-container">
+    <h3>Image Output</h3>
+    <p id="placeholder">Image preview will appear here.</p>
+    <img id="imagePreview" class="hidden" alt="Image preview">
+
+    <a id="downloadImageLink" class="hidden"
+       download="converted-image.png">
+        <button type="button">Download Image</button>
+    </a>
+</div>
+
+<div class="card">
+    <h2>Base64 to GLB</h2>
+    <p class="section-note">
+        Convert a Base64-encoded GLB model string into a downloadable GLB file.
+        Processing happens locally in your browser.
+    </p>
+
+    <label for="glbInput">Base64 model string</label>
+    <textarea id="glbInput" spellcheck="false"
+        placeholder="Paste Base64 model data here..."></textarea>
+
+    <label for="glbFilename">Output filename</label>
+    <input type="text" id="glbFilename" value="model.glb">
+
+    <div class="controls">
+        <button class="primary" id="convertGlbBtn">
+            Convert &amp; Download GLB
+        </button>
+        <button id="clearGlbBtn">Clear</button>
+    </div>
+
+    <div id="glbStatus" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const base64Input = document.getElementById("base64Input");
+const img = document.getElementById("imagePreview");
+const downloadImageLink = document.getElementById("downloadImageLink");
+const placeholder = document.getElementById("placeholder");
+const imageStatus = document.getElementById("imageStatus");
+
+// Image upload to Base64
+fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        base64Input.value = e.target.result;
+        displayImage(e.target.result, file.name);
+        imageStatus.textContent = "Image converted to Base64.";
+    };
+
+    reader.onerror = function () {
+        imageStatus.textContent = "Could not read image.";
+    };
+
+    reader.readAsDataURL(file);
+});
+
+function processString() {
+    let input = base64Input.value.trim();
+
+    if (!input) {
+        imageStatus.textContent = "Enter a Base64 string first.";
+        return;
+    }
+
+    input = input.replace(/^["']|["']$/g, "");
+
+    if (!/^data:image\//i.test(input)) {
+        input = "data:image/png;base64," + input.replace(/\s/g, "");
+    }
+
+    const testImage = new Image();
+
+    testImage.onload = function () {
+        displayImage(input, "converted-image.png");
+        imageStatus.textContent = "Image decoded successfully.";
+    };
+
+    testImage.onerror = function () {
+        imageStatus.textContent = "Invalid image data.";
+    };
+
+    testImage.src = input;
+}
+
+function displayImage(src, filename) {
+    img.src = src;
+    img.classList.remove("hidden");
+    downloadImageLink.href = src;
+    downloadImageLink.download = filename || "converted-image.png";
+    downloadImageLink.classList.remove("hidden");
+    placeholder.classList.add("hidden");
+}
+
+async function copyToClipboard() {
+    if (!base64Input.value) {
+        imageStatus.textContent = "Nothing to copy.";
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(base64Input.value);
+        imageStatus.textContent = "Base64 copied.";
+    } catch {
+        base64Input.select();
+        const success = document.execCommand("copy");
+        imageStatus.textContent = success
+            ? "Base64 copied."
+            : "Select and copy the text manually.";
+    }
+}
+
+const glbInput = document.getElementById("glbInput");
+const glbFilename = document.getElementById("glbFilename");
+const glbStatus = document.getElementById("glbStatus");
+
+document.getElementById("convertGlbBtn").addEventListener("click", function () {
+    let raw = glbInput.value.trim()
+        .replace(/^["']|["']$/g, "")
+        .replace(/^data:[^,]*;base64,/i, "")
+        .replace(/\s/g, "");
+
+    if (!raw) {
+        glbStatus.textContent = "Paste a Base64 string first.";
+        return;
+    }
+
+    try {
+        const binary = atob(raw);
+        const bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+
+        if (
+            bytes.length < 12 ||
+            bytes[0] !== 0x67 ||
+            bytes[1] !== 0x6c ||
+            bytes[2] !== 0x54 ||
+            bytes[3] !== 0x46
+        ) {
+            glbStatus.textContent =
+                "Invalid GLB header. The decoded data may be another format.";
+            return;
+        }
+
+        const view = new DataView(bytes.buffer);
+        const version = view.getUint32(4, true);
+
+        if (version !== 2) {
+            glbStatus.textContent =
+                "GLB version " + version + " detected. Expected version 2.";
+            return;
+        }
+
+        const declaredLength = view.getUint32(8, true);
+
+        if (declaredLength !== bytes.length) {
+            glbStatus.textContent =
+                "Warning: GLB header length does not match decoded data.";
+            return;
+        }
+
+        let name = glbFilename.value.trim() || "model.glb";
+
+        if (!name.toLowerCase().endsWith(".glb")) {
+            name += ".glb";
+        }
+
+        const blob = new Blob([bytes], {
+            type: "model/gltf-binary"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+        glbStatus.textContent =
+            "Downloaded " + name + " (" +
+            bytes.length.toLocaleString() + " bytes).";
+
+    } catch (error) {
+        glbStatus.textContent =
+            "Could not decode Base64. Check that the string is valid.";
+    }
+});
+
+document.getElementById("clearGlbBtn").addEventListener("click", function () {
+    glbInput.value = "";
+    glbFilename.value = "model.glb";
+    glbStatus.textContent = "";
+    glbInput.focus();
+});
+</script>
 
 </body>
 </html>
